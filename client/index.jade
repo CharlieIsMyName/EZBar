@@ -2,12 +2,29 @@ doctype
 
 html
   head
-    title Ezpoll - A simple voting web app!
+    title Ezbar- A simple Bar-Finder!
     include lib.jade
     
   body
       div(class="container-fluid")
         include header.jade
+        
+        form(action="/" method="post")
+          div(class="searchBar row")
+            input(type="text" class="search-text" name="location" placeholder="#{location?location:''}")
+            input(type="submit" class="search-btn" value="Search!")
+        if err
+          div(class="row error-prompt") The location is not supported or does not exist! Please try again
+        if data
+          each d in data
+           form(action="#{user?'/':'/signin'}" method="#{user?'post':'get'}")
+            div(class="dataListElement")
+              img(class="icon" src="#{d.image_url}")
+              a(href="#{d.mobile_url}")
+                div(class="dataTitle") #{d.name}
+              div(class="dataSubtitle") #{d.snippet_text}
+            input(type="text" style="display: none" value="#{d.mobile_url}" name="url")
+            input(type="submit" class="dataListButton" value="#{(d.count?d.count:0)+' people going'}")
         
           
 script(src="js/init.js")

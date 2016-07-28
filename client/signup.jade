@@ -2,7 +2,7 @@ doctype
 
 html
   head
-    title Sign Up For EzPoll
+    title Sign Up For EzBar
     include lib.jade
     
   body
@@ -19,7 +19,7 @@ html
                input(type="password" name="password" class="long-input")
                p(class="form-prompt") Re-enter Password
                input(type="password" name="re-password" class="long-input")
-               input(type="submit" value="Sign Up And Enjoy Voting!" class="submit-btn")
+               input(type="submit" value="Sign Up" class="submit-btn")
                
                -function errToElement(err){
                -    if(err=="exist"){return "<div class='error-prompt'>This user name already exist! Please try another one! </div>"}

@@ -14,6 +14,11 @@ var dburl=process.argv[3];  //dburl will be the second argument
 const db=monk(dburl);
 const loginCollectionName="ezbar-login"
 
+var Yelp=require('yelp');
+var yelpKey=require('./key.json');
+var yelp=new Yelp(yelpKey);
+
+
 function isValid(str) { return /^\w+$/.test(str); };      //the function that checks if a string is purely composed of number and alphabets
 
 app.set("views",__dirname+"/client");
@@ -35,9 +40,97 @@ app.use(function(req,res,next){
 })
 
 app.get('/',function(req,res){
-  res.render("index",{
-    user: req.session.user
-  });
+  if(req.session.lastLocation){
+    yelp.search({term: "bar", location: req.session.lastLocation})
+    .then(function(d){
+      var urlList=[];   //all the mobile_url in d. In this case the url will be the unique identifier of the business
+      for(var i=0;i<d.businesses.length;i++){
+        urlList.push(d.businesses[i].mobile_url);        
+      }
+      
+      req.db.collection("ezbar-data").find({url:{$in: urlList}},function(err,entry){
+        if(err) throw err;
+        var data=d.businesses;
+        
+        for(var i=0;i<entry.length;i++){
+          for(var j=0;j<data.length;j++){
+            if(entry[i].url==data[j].mobile_url){    //if url match, create count property based on usernameList.length
+              data[j].count=entry[i].usernameList.length;
+            }
+          }
+        }
+        
+        res.render("index",{
+          user: req.session.user,
+          data: data,
+          location: req.session.lastLocation
+        });
+        return;
+      });
+      
+      
+      return;
+    })
+    .catch(function(err){
+      throw err;
+    });
+  }
+  else{
+    res.render("index",{
+      user: req.session.user
+    });
+  }
+});
+
+app.post('/',function(req,res){
+  if(req.body.location){
+    req.session.lastLocation=req.body.location;
+    res.redirect('/');
+    return;
+  }
+  else if(req.body.url){
+    if(req.session||req.session.user){   //only user logged in can proceed
+      var url=req.body.url;
+      
+      req.db.collection("ezbar-data").find({url: url},function(err,data){
+        if(err)throw err;
+        
+        
+        var length=0;
+        if(data.length==0){   //the place is not inserted in the database yet
+          req.db.collection("ezbar-data").insert({url: url, usernameList: [req.session.user.username]});
+          length=1;
+          res.redirect('/');
+          return;
+        }
+        else{   //the url already exist. check if the user is already in it.
+          var usernameList=data[0].usernameList;      //normally duplication of url SHOULD NEVER HAPPEN! so we will choose the first one
+          for(var i=0;i<usernameList.length;i++){
+            if(usernameList[i]==req.session.user.username){    //found name. remove from the list and update it.
+              usernameList.splice(i,1);
+              req.db.collection("ezbar-data").update({url:url},{url:url,usernameList:usernameList});
+              res.redirect('/');
+              return;
+            }
+          }
+          
+          //else we add the username into the username list
+          usernameList.push(req.session.user.username);
+          req.db.collection("ezbar-data").update({url:url},{url:url,usernameList:usernameList});
+          res.redirect('/');
+          return;
+          
+        }
+        
+        
+        
+      })
+    }
+    else{
+      res.redirect('/signin');
+    }
+  }
+  
 });
 
 app.get('/signup',function(req,res){
