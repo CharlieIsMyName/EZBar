@@ -72,7 +72,10 @@ app.get('/',function(req,res){
       return;
     })
     .catch(function(err){
-      throw err;
+      res.render("index",{
+          user: req.session.user,
+          err: true
+        });
     });
   }
   else{
