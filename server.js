@@ -41,6 +41,7 @@ app.use(function(req,res,next){
 
 app.get('/',function(req,res){
   if(req.session.lastLocation){
+    console.log(req.session.lastLocation);
     yelp.search({term: "bar", location: req.session.lastLocation})
     .then(function(d){
       var urlList=[];   //all the mobile_url in d. In this case the url will be the unique identifier of the business
@@ -72,10 +73,11 @@ app.get('/',function(req,res){
       return;
     })
     .catch(function(err){
+      req.session.lastLocation=null;
       res.render("index",{
           user: req.session.user,
           err: true
-        });
+      });
     });
   }
   else{
