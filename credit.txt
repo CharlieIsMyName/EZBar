@@ -1,0 +1,1 @@
+Thanks to Yelp API that helped me with bar search to make this webapp possible! Also thanks to the npm package "yelp" that helped me to access Yelp API much easier!
