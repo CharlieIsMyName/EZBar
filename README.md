@@ -10,18 +10,14 @@ This app require the mongodb to contain two collections - "ezbar-login" and "ezp
 
 The app must also contain a key.json file, which have the YELP key information in the following format since this app have used YELP API.
 
+```json
 {
-
   "consumer_key": "a",
-  
   "consumer_secret": "b",
-  
   "token": "c",
-  
   "token_secret": "d"
-  
 }
-
+```
 
 #Project information
 
